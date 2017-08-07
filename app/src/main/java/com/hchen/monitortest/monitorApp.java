@@ -4,13 +4,17 @@ import android.app.ActivityManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class monitorApp extends Service {
     private final String TAG="MONITORAPP_SERVICE";
@@ -21,6 +25,7 @@ public class monitorApp extends Service {
     private HashMap<String,Integer> appsStored=null;//保存开启和关闭的程序进程名称列表
     private final int STARTED_APP=0;//刚开启的程序标记为0
     private final int CLOSED_APP=1;//刚关闭的程序标记为1
+    private int APP_STATUS=2;
     Thread th_monitor;
     @Override
     public void onCreate() {
@@ -75,7 +80,11 @@ public class monitorApp extends Service {
                         //如果新获取的程序在原来获取的程序列表中则该程序没有变化，否则该程序为刚启动
                         if(!oldrunningappsprocessnameList.contains(newapp))
                         {
-                            appsStored.put(newapp,STARTED_APP);
+                            if(newapp.contains("dropletanalysis"))//在contains里面加上需要检测的程序包含名称。
+                            {
+                                APP_STATUS=1;
+                                //appsStored.put(newapp, STARTED_APP);
+                            }
                             Log.i(TAG+"new",newapp);
                         }
                     }
@@ -84,22 +93,26 @@ public class monitorApp extends Service {
                         //如果以前获取的程序在刚刚获取的程序列表中则该程序没有变化，否则该程序为刚关闭
                         if(!newrunningappsprocessnameList.contains(oldapp))
                         {
-                            appsStored.put(oldapp,CLOSED_APP);
+                            if(oldapp.contains("dropletanalysis"))
+                            {
+                                APP_STATUS=0;
+                                //appsStored.put(oldapp,CLOSED_APP);
+                            }
+
                             Log.i(TAG+"close", oldapp);
                         }
 
                     }
                     //发出广播
-                    if(appsStored.size()!=0)
+                    if(APP_STATUS!=2)
                     {
                         Intent intent=new Intent();
-                        Bundle bundle=new Bundle();
-                        bundle.putSerializable("app_info", appsStored);
-                        intent.putExtra("bundle", bundle);
+                        intent.putExtra("app_status", APP_STATUS);
                         intent.setAction(ACTION);
                         monitorApp.this.sendBroadcast(intent);
-                        Log.i(TAG+"cast", "true");
-                        appsStored=null;
+                        Log.i(TAG+"cast", "true"+APP_STATUS);
+                        APP_STATUS=2;
+                        //appsStored=null;
                     }
                 }
 

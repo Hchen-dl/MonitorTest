@@ -22,13 +22,21 @@
                 <action android:name="com.hchen.monitortest.monitorApp" />
             </intent-filter>
         </service>
+
+        <receiver android:name=".MyCastReceiver">
+            <intent-filter>
+                <action android:name="com.hchen.monitortest.OpenPeActivity" />
+            </intent-filter>
+        </receiver>
+
         <service android:name=".TestService1">
             <intent-filter>
                 <action android:name="com.hchen.monitortest.TEST_SERVICE1" />
             </intent-filter>
         </service>
 
-        <activity android:name=".OpenPeActivity"></activity>
+        <activity android:name=".OpenPeActivity" />
+        <activity android:name=".BaseActivity"></activity>
     </application>
 
 </manifest>
